@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Curator Dashboard | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="p-4 rounded-3 border" style="background-color: #1e293b; border-color: #475569;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2">Curator & Admin Panel</span>
+                    <h2 class="h3 mb-1">Catalog Overview — {{ user.username }}</h2>
+                    <p class="text-muted mb-0">Platform metadata, taxonomy curation, and audio management</p>
+                </div>
+                <a href="{% url 'dashboard:profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Total Recordings</div>
+            <div class="display-6 fw-bold text-primary mt-2">{{ catalog_stats.total_recordings }}</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Pending Mood Audits</div>
+            <div class="display-6 fw-bold text-warning mt-2">{{ catalog_stats.pending_mood_audits }}</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Registered Listeners</div>
+            <div class="display-6 fw-bold text-info mt-2">{{ catalog_stats.active_listeners }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
