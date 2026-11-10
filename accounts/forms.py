@@ -40,3 +40,22 @@ class UserRegistrationForm(UserCreationForm):
         for field in ("password", "password_confirm"):
             if field in self.fields:
                 self.fields[field].widget.attrs.update({"class": "form-control"})
+                
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email", "contact_number", "bio")
+        widgets = {
+            "first_name": forms.TextInput(attrs={"class": "form-control"}),
+            "last_name": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(attrs={"class": "form-control"}),
+            "contact_number": forms.TextInput(attrs={"class": "form-control"}),
+            "bio": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email", "").strip().lower()
+        # Ensure email is unique across other users
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("This email is already in use by another account.")
+        return email

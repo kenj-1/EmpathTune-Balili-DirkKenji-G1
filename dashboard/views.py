@@ -2,7 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
+from django.urls import reverse_lazy
+from django.views.generic.edit import UpdateView
+from accounts.forms import UserProfileForm
+from accounts.models import User
 
 @login_required
 def dashboard_router(request):
@@ -46,3 +51,17 @@ def curator_dashboard(request):
         },
     }
     return render(request, "dashboard/curator_dashboard.html", context)
+
+
+
+
+class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = User
+    form_class = UserProfileForm
+    template_name = "dashboard/profile.html"
+    success_url = reverse_lazy("dashboard:profile")
+    success_message = "Your profile has been updated successfully!"
+
+    def get_object(self, queryset=None):
+        # Security Guard: strictly returns the logged-in user so URL manipulation cannot touch other records
+        return self.request.user
