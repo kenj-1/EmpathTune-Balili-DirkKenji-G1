@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow p-4">
+            <h3 class="card-title text-center mb-3">Create Account</h3>
+            <p class="text-center text-muted small mb-4">Join EmpathTune as a Listener or Curator</p>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary w-100 mt-2">Create Account</button>
+            </form>
+
+            <div class="text-center mt-3 small text-muted">
+                Already registered? <a href="{% url 'login' %}" class="text-info text-decoration-none">Log in here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
