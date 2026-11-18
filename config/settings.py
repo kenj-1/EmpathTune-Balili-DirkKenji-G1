@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     # Local Apps
     "accounts",
     "dashboard",
+    "music",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
