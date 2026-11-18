@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView
 from accounts.forms import UserProfileForm
 from accounts.models import User
-from music.models import MoodTag, Track
+from music.models import MoodTag, SongFeeling, Track
 
 
 @login_required
@@ -20,18 +20,34 @@ def dashboard_router(request):
 
 @login_required
 def listener_dashboard(request):
-    """Listener-only space with personal mood preferences."""
+    """Listener-only space with personal mood preferences and saved song meanings."""
     if request.user.role != "listener" and not request.user.is_superuser:
         messages.error(request, "Access denied: Curators cannot access the personal Listener workspace.")
         return redirect("dashboard:curator")
 
+    user_feelings_qs = (
+        SongFeeling.objects.filter(listener=request.user)
+        .select_related("track")
+        .prefetch_related("moods")
+    )
+    saved_meanings_count = user_feelings_qs.count()
+    favorites_count = user_feelings_qs.filter(is_favorite=True).count()
+    available_tracks_count = Track.objects.count()
+    recent_feelings = user_feelings_qs[:5]
+    mood_tags = MoodTag.objects.all()
+
     context = {
         "title": "Listener Workspace",
-        "saved_moods": ["In Love", "Calm", "Focused", "Need Uplift"],
-        "recent_sessions": [
-            {"title": "Midnight Reflections", "feeling": "Calm", "time": "2 hours ago"},
-            {"title": "Study Flow Session", "feeling": "Focused", "time": "Yesterday"},
-        ],
+        "listener_stats": {
+            "saved_meanings_count": saved_meanings_count,
+            "favorites_count": favorites_count,
+            "available_tracks_count": available_tracks_count,
+        },
+        "saved_meanings_count": saved_meanings_count,
+        "favorites_count": favorites_count,
+        "available_tracks_count": available_tracks_count,
+        "recent_feelings": recent_feelings,
+        "mood_tags": mood_tags,
     }
     return render(request, "dashboard/listener_dashboard.html", context)
 
