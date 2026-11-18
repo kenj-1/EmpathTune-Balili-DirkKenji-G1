@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Personal Meaning | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow p-4 border-danger">
+            <div class="mb-3">
+                <span class="badge bg-danger mb-2">Confirm Removal</span>
+                <h3 class="card-title mb-1">Remove Personal Song Meaning?</h3>
+                <p class="text-muted small mb-0">
+                    This will remove your private mood associations and note for this track. The track itself will remain in the catalog.
+                </p>
+            </div>
+
+            <div class="p-3 rounded mb-4 border border-secondary" style="background-color: #0f172a;">
+                <div class="fw-bold fs-5 text-light">{{ feeling.track.title }}</div>
+                <div class="text-muted mb-2">{{ feeling.track.artist }}</div>
+                {% if feeling.moods.all %}
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for mood in feeling.moods.all %}
+                            <span class="badge bg-primary">{{ mood.icon }} {{ mood.label }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if feeling.note %}
+                    <div class="small text-light fst-italic">"{{ feeling.note }}"</div>
+                {% endif %}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger px-4">Yes, Remove My Meaning</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

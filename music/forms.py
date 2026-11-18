@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from .models import MoodTag, Track
+from .models import MoodTag, SongFeeling, Track
 
 
 class TrackForm(forms.ModelForm):
@@ -94,3 +94,52 @@ class TrackForm(forms.ModelForm):
                     "Please enter a valid preview URL starting with http:// or https://."
                 )
         return url
+
+
+class SongFeelingForm(forms.ModelForm):
+    moods = forms.ModelMultipleChoiceField(
+        queryset=MoodTag.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
+        help_text="Choose 1 to 3 moods that capture how this song feels to you.",
+    )
+
+    class Meta:
+        model = SongFeeling
+        fields = ("moods", "note", "is_favorite")
+        widgets = {
+            "note": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "maxlength": 240,
+                    "placeholder": "Share your personal memory, reflection, or emotional association with this song (up to 240 chars)...",
+                }
+            ),
+            "is_favorite": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
+
+    def clean_note(self):
+        return (self.cleaned_data.get("note") or "").strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        moods = cleaned_data.get("moods")
+        note = (cleaned_data.get("note") or "").strip()
+        cleaned_data["note"] = note
+
+        if moods and len(moods) > 3:
+            self.add_error(
+                "moods",
+                "You can select at most 3 mood tags for a personal song meaning.",
+            )
+            raise ValidationError(
+                "Please select no more than 3 mood tags for a single track."
+            )
+
+        if (not moods or len(moods) == 0) and not note:
+            raise ValidationError(
+                "Please select at least 1 mood tag or write a non-empty personal note."
+            )
+
+        return cleaned_data

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_update %}Edit Personal Meaning{% else %}Log Personal Meaning{% endif %} | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+                <div>
+                    <span class="badge bg-primary mb-2">Personal Song Journal</span>
+                    <h3 class="card-title mb-1">
+                        {% if is_update %}Update Your Meaning{% else %}How Does This Song Feel to You?{% endif %}
+                    </h3>
+                    <p class="text-muted small mb-0">
+                        Your personal mood tags and reflection note are private to your Listener account
+                    </p>
+                </div>
+                <a href="{% url 'music:track_discover' %}" class="btn btn-outline-secondary btn-sm">
+                    ← Back to Discover
+                </a>
+            </div>
+
+            <!-- Target Track Summary Card -->
+            <div class="p-3 rounded mb-4 border border-secondary" style="background-color: #0f172a;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <div class="fw-bold fs-5 text-light">{{ track.title }}</div>
+                        <div class="text-muted">{{ track.artist }}{% if track.album %} — {{ track.album }}{% endif %}</div>
+                    </div>
+                    {% if track.preview_url %}
+                        <a href="{{ track.preview_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-info btn-sm">
+                            ▶ Listen Preview
+                        </a>
+                    {% endif %}
+                </div>
+                {% if track.moods.all %}
+                    <div class="mt-2 pt-2 border-top border-secondary d-flex flex-wrap align-items-center gap-1">
+                        <span class="text-muted small me-1">Curator Moods:</span>
+                        {% for mood in track.moods.all %}
+                            <span class="badge rounded-pill px-2 py-1" style="background-color: #312e81; color: #e0e7ff;">
+                                {{ mood.icon }} {{ mood.label }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold d-block mb-1">
+                        Personal Mood Tags <span class="text-muted small fw-normal">(Select up to 3)</span>
+                    </label>
+                    <div class="row g-2">
+                        {% for checkbox in form.moods %}
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-check d-flex align-items-center gap-2 p-2 rounded border border-secondary" style="background-color: #0f172a; cursor: pointer;">
+                                    {{ checkbox.tag }}
+                                    <span class="form-check-label text-light">{{ checkbox.choice_label }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-text text-muted small mt-2">{{ form.moods.help_text }}</div>
+                    {% for error in form.moods.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="{{ form.note.id_for_label }}">
+                        Personal Reflection / Memory Note
+                    </label>
+                    {{ form.note }}
+                    <div class="form-text text-muted small">
+                        Provide at least 1 mood tag above or write a reflection note here (max 240 characters).
+                    </div>
+                    {% for error in form.note.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-check d-inline-flex align-items-center gap-2 p-2 px-3 rounded border border-secondary" style="background-color: #0f172a; cursor: pointer;">
+                        {{ form.is_favorite }}
+                        <span class="form-check-label text-warning fw-semibold">★ Mark as a Personal Favorite Track</span>
+                    </label>
+                    {% for error in form.is_favorite.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-3 border-top border-secondary">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        {% if is_update and feeling %}
+                            <a href="{% url 'music:song_feeling_delete' feeling.pk %}" class="btn btn-outline-danger">
+                                Delete Meaning
+                            </a>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4">
+                        {% if is_update %}Save Changes{% else %}Save Personal Meaning{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

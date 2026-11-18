@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}My Song Meanings | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="p-4 rounded-3 border" style="background-color: #1e293b; border-color: #334155;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="badge bg-primary mb-2">Private Listener Journal</span>
+                    <h2 class="h3 mb-1">My Personal Song Meanings</h2>
+                    <p class="text-muted mb-0">
+                        {{ total_feelings_count }} saved song meaning{{ total_feelings_count|pluralize }} · {{ favorites_count }} favorite{{ favorites_count|pluralize }}
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'dashboard:listener' %}" class="btn btn-outline-light btn-sm">← Listener Dashboard</a>
+                    <a href="{% url 'music:track_discover' %}" class="btn btn-primary btn-sm">+ Discover &amp; Log More Tracks</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="col-12">
+        <div class="card p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ search_query }}"
+                        class="form-control"
+                        placeholder="Search your meanings by track, artist, or note..."
+                    >
+                </div>
+                <div class="col-md-3">
+                    <select name="mood" class="form-select">
+                        <option value="">All Personal Moods</option>
+                        {% for mood in mood_tags %}
+                            <option value="{{ mood.slug }}" {% if selected_mood == mood.slug %}selected{% endif %}>
+                                {{ mood.icon }} {{ mood.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-check d-flex align-items-center gap-2 mb-0">
+                        <input
+                            type="checkbox"
+                            name="favorites"
+                            value="1"
+                            class="form-check-input"
+                            {% if favorites_only %}checked{% endif %}
+                        >
+                        <span class="form-check-label small text-warning">★ Favorites Only</span>
+                    </label>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    {% if search_query or selected_mood or favorites_only %}
+                        <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-secondary">Reset</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Personal Meanings List -->
+    {% if feelings %}
+        {% for feeling in feelings %}
+            <div class="col-md-6">
+                <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <div>
+                                <h5 class="mb-1 text-light">
+                                    {{ feeling.track.title }}
+                                    {% if feeling.is_favorite %}
+                                        <span class="badge bg-warning text-dark ms-1">★ Favorite</span>
+                                    {% endif %}
+                                </h5>
+                                <div class="text-muted">{{ feeling.track.artist }}{% if feeling.track.album %} · <span class="small">{{ feeling.track.album }}</span>{% endif %}</div>
+                            </div>
+                            <span class="text-muted small">{{ feeling.updated_at|date:"M d, Y" }}</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="text-muted small d-block mb-1">My Mood Associations:</span>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for mood in feeling.moods.all %}
+                                    <span class="badge bg-primary px-2 py-1">
+                                        {{ mood.icon }} {{ mood.label }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-muted small fst-italic">Note-only reflection</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if feeling.note %}
+                            <div class="p-3 rounded mb-3 border border-secondary" style="background-color: #0f172a;">
+                                <p class="mb-0 text-light fst-italic">"{{ feeling.note }}"</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                        <div>
+                            {% if feeling.track.preview_url %}
+                                <a href="{{ feeling.track.preview_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-info btn-sm">
+                                    ▶ Listen
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'music:song_feeling_upsert' feeling.track.pk %}" class="btn btn-outline-light">Edit</a>
+                            <a href="{% url 'music:song_feeling_delete' feeling.pk %}" class="btn btn-outline-danger">Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card p-5 text-center">
+                <h5 class="mb-2">No personal song meanings found</h5>
+                {% if search_query or selected_mood or favorites_only %}
+                    <p class="text-muted mb-3">No saved meanings matched your active filters.</p>
+                    <div>
+                        <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-light btn-sm">Clear Filters</a>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-3">You haven't recorded any personal song meanings yet. Explore the catalog and log how your favorite tracks make you feel!</p>
+                    <div>
+                        <a href="{% url 'music:track_discover' %}" class="btn btn-primary">Explore Music Catalog</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
