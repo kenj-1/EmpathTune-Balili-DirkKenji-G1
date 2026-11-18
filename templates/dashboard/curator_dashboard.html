@@ -6,28 +6,32 @@
 <div class="row g-4">
     <div class="col-12">
         <div class="p-4 rounded-3 border" style="background-color: #1e293b; border-color: #475569;">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
-                    <span class="badge bg-warning text-dark mb-2">Curator & Admin Panel</span>
+                    <span class="badge bg-warning text-dark mb-2">Curator &amp; Admin Panel</span>
                     <h2 class="h3 mb-1">Catalog Overview — {{ user.username }}</h2>
                     <p class="text-muted mb-0">Platform metadata, taxonomy curation, and audio management</p>
                 </div>
-                <a href="{% url 'dashboard:profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'music:curator_track_list' %}" class="btn btn-primary btn-sm">Manage Track Catalog</a>
+                    <a href="{% url 'music:curator_track_create' %}" class="btn btn-outline-info btn-sm">+ Add New Track</a>
+                    <a href="{% url 'dashboard:profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="col-md-4">
         <div class="card p-3 text-center">
-            <div class="text-muted small">Total Recordings</div>
+            <div class="text-muted small">Total Curated Tracks</div>
             <div class="display-6 fw-bold text-primary mt-2">{{ catalog_stats.total_recordings }}</div>
         </div>
     </div>
 
     <div class="col-md-4">
         <div class="card p-3 text-center">
-            <div class="text-muted small">Pending Mood Audits</div>
-            <div class="display-6 fw-bold text-warning mt-2">{{ catalog_stats.pending_mood_audits }}</div>
+            <div class="text-muted small">Core Mood Tags</div>
+            <div class="display-6 fw-bold text-warning mt-2">{{ catalog_stats.mood_tags_count }}</div>
         </div>
     </div>
 
@@ -35,6 +39,54 @@
         <div class="card p-3 text-center">
             <div class="text-muted small">Registered Listeners</div>
             <div class="display-6 fw-bold text-info mt-2">{{ catalog_stats.active_listeners }}</div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Recent Curated Tracks</h5>
+                <a href="{% url 'music:curator_track_list' %}" class="btn btn-outline-light btn-sm">View Full Catalog →</a>
+            </div>
+            {% if recent_tracks %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="--bs-table-bg: #1e293b; --bs-table-border-color: #334155;">
+                        <thead>
+                            <tr class="text-muted small text-uppercase">
+                                <th>Track</th>
+                                <th>Artist</th>
+                                <th>Moods</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for track in recent_tracks %}
+                                <tr>
+                                    <td class="fw-semibold">{{ track.title }}</td>
+                                    <td class="text-muted">{{ track.artist }}</td>
+                                    <td>
+                                        {% for mood in track.moods.all %}
+                                            <span class="badge rounded-pill px-2 py-1" style="background-color: #312e81; color: #e0e7ff;">
+                                                {{ mood.icon }} {{ mood.label }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="text-muted small fst-italic">Untagged</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'music:curator_track_update' track.pk %}" class="btn btn-outline-light btn-sm">Edit</a>
+                                        <a href="{% url 'music:curator_track_delete' track.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">
+                    No tracks have been added yet. <a href="{% url 'music:curator_track_create' %}" class="text-info">Add your first track</a> to populate the EmpathTune catalog.
+                </p>
+            {% endif %}
         </div>
     </div>
 </div>

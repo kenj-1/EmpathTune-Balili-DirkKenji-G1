@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import UpdateView
 from accounts.forms import UserProfileForm
 from accounts.models import User
+from music.models import MoodTag, Track
+
 
 @login_required
 def dashboard_router(request):
@@ -42,17 +43,25 @@ def curator_dashboard(request):
         messages.error(request, "Access denied: You do not have Curator privileges to view that page.")
         return redirect("dashboard:listener")
 
+    total_tracks = Track.objects.count()
+    total_moods = MoodTag.objects.count()
+    active_listeners = User.objects.filter(role="listener").count()
+    recent_tracks = Track.objects.select_related("created_by").prefetch_related("moods")[:5]
+
     context = {
         "title": "Curator Management Console",
         "catalog_stats": {
-            "total_recordings": 128,
-            "pending_mood_audits": 14,
-            "active_listeners": 42,
+            "total_recordings": total_tracks,
+            "mood_tags_count": total_moods,
+            "pending_mood_audits": total_moods,
+            "active_listeners": active_listeners,
         },
+        "total_tracks": total_tracks,
+        "mood_tags_count": total_moods,
+        "active_listeners": active_listeners,
+        "recent_tracks": recent_tracks,
     }
     return render(request, "dashboard/curator_dashboard.html", context)
-
-
 
 
 class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

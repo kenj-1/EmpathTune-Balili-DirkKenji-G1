@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Track | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="card shadow p-4 border-danger">
+            <div class="mb-3">
+                <span class="badge bg-danger mb-2">Confirm Catalog Removal</span>
+                <h3 class="card-title mb-1">Delete Track?</h3>
+                <p class="text-muted small mb-0">
+                    This action will permanently remove the recording and its mood associations from the EmpathTune catalog.
+                </p>
+            </div>
+
+            <div class="p-3 rounded mb-4 border border-secondary" style="background-color: #0f172a;">
+                <div class="fw-bold fs-5 text-light">{{ track.title }}</div>
+                <div class="text-muted">{{ track.artist }}{% if track.album %} — {{ track.album }}{% endif %}</div>
+                {% if track.moods.all %}
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                        {% for mood in track.moods.all %}
+                            <span class="badge rounded-pill px-2 py-1" style="background-color: #312e81; color: #e0e7ff;">
+                                {{ mood.icon }} {{ mood.label }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{% url 'music:curator_track_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-danger px-4">Yes, Delete Track</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Edit Track{% else %}Add New Track{% endif %} | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card shadow p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+                <div>
+                    <span class="badge bg-warning text-dark mb-2">Curator Studio</span>
+                    <h3 class="card-title mb-1">
+                        {% if object %}Edit Track: {{ object.title }}{% else %}Add New Track to Catalog{% endif %}
+                    </h3>
+                    <p class="text-muted small mb-0">
+                        Enter recording metadata and tag with EmpathTune mood contexts
+                    </p>
+                </div>
+                <a href="{% url 'music:curator_track_list' %}" class="btn btn-outline-secondary btn-sm">
+                    ← Back to Catalog
+                </a>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.title.id_for_label }}">
+                            Track Title <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        {% for error in form.title.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.artist.id_for_label }}">
+                            Artist <span class="text-danger">*</span>
+                        </label>
+                        {{ form.artist }}
+                        {% for error in form.artist.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.album.id_for_label }}">Album</label>
+                        {{ form.album }}
+                        {% for error in form.album.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" for="{{ form.genre.id_for_label }}">Genre</label>
+                        {{ form.genre }}
+                        {% for error in form.genre.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="{{ form.preview_url.id_for_label }}">
+                        External Preview / Streaming URL
+                    </label>
+                    {{ form.preview_url }}
+                    <div class="form-text text-muted small">
+                        Optional link to Spotify, YouTube, SoundCloud, or audio preview starting with https://
+                    </div>
+                    {% for error in form.preview_url.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold d-block mb-2">Mood Taxonomy Tags</label>
+                    <div class="row g-2">
+                        {% for checkbox in form.moods %}
+                            <div class="col-sm-6 col-md-4">
+                                <label class="form-check d-flex align-items-center gap-2 p-2 rounded border border-secondary" style="background-color: #0f172a; cursor: pointer;">
+                                    {{ checkbox.tag }}
+                                    <span class="form-check-label text-light">{{ checkbox.choice_label }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="form-text text-muted small mt-2">{{ form.moods.help_text }}</div>
+                    {% for error in form.moods.errors %}
+                        <div class="text-danger small mt-1">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary">
+                    <a href="{% url 'music:curator_track_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4">
+                        {% if object %}Save Changes{% else %}Add Track to Catalog{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

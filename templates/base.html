@@ -25,6 +25,9 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     {% if user.is_authenticated %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:router' %}">Dashboard</a></li>
+                        {% if user.role == 'curator' or user.is_superuser %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'music:curator_track_list' %}">Catalog</a></li>
+                        {% endif %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard:profile' %}">Profile</a></li>
                         <li class="nav-item ms-lg-2">
                             <form action="{% url 'logout' %}" method="post" class="d-inline">
