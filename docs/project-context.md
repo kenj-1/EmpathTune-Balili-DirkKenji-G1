@@ -3,7 +3,7 @@
 - **Repository:** `EmpathTune-Balili-DirkKenji-G1`
 - **Student / Developer:** Dirk Kenji Balili (Group 1)
 - **Architecture:** Full-Stack Server-Rendered Django (`Django ORM` + `Django Forms` + `Django Templates`)
-- **Database:** Supabase PostgreSQL (`psycopg`, SSL-enabled connection via environment variables)
+- **Database:** Supabase PostgreSQL (`psycopg`, SSL-enabled connection via environment variables; default `EMPATH_DB_MODE=postgres`, with optional `EMPATH_DB_MODE=local` for offline workstation testing)
 - **UI Design System:** Midnight Indigo Dark Theme (Bootstrap 5.3 via `templates/base.html`)
 
 ---

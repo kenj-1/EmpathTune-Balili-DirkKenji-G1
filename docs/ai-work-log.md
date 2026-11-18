@@ -103,3 +103,20 @@
    - Prepared structured report sections (Features Implemented, Gitflow Branches/Commits/PR Table, Remaining WBS Tasks, Outstanding Issues/Limitations, and Test Accounts table) ready for export to `docs/EmpathTune-Balili-DirkKenji-G1-PD2.pdf`.
 4. **Next Step (Release PR #3):**
    - Export `docs/EmpathTune-Balili-DirkKenji-G1-PD2.pdf`, commit on `develop`, push `origin/develop`, and open/merge **PR #3 (`develop` -> `main`)**.
+
+---
+
+## Entry 5 — Database Mode Toggle (`EMPATH_DB_MODE`) with Supabase Default
+
+- **Date:** 2026-11-18
+- **Branch:** `develop`
+- **Status Transition:** `In progress` -> `Complete`
+- **Changed Files:**
+  - `config/settings.py`
+  - `.env.example`
+  - `README.md`
+  - `docs/project-context.md`
+  - `docs/ai-work-log.md`
+- **Summary & Verification:**
+  - Implemented `EMPATH_DB_MODE` in `config/settings.py` defaulting strictly to Supabase PostgreSQL (`postgres` / `postgresql` / `supabase` / unset) with `sslmode="require"`, while supporting `local` / `sqlite` for offline workstation testing and raising `ImproperlyConfigured` on invalid values.
+  - Verified `manage.py check` (0 issues) and `manage.py test` (7/7 tests passing) in a temporary shell session without modifying `.env` or leaving any `db.sqlite3` file.

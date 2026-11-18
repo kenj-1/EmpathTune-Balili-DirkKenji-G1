@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,21 +55,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Supabase PostgreSQL Configuration
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("EMPATH_DB_NAME", "postgres"),
-        "USER": os.environ.get("EMPATH_DB_USER", "postgres"),
-        "PASSWORD": os.environ.get("EMPATH_DB_PASSWORD", ""),
-        "HOST": os.environ.get("EMPATH_DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("EMPATH_DB_PORT", "5432"),
-        "OPTIONS": {
-            "sslmode": "require",
-            "connect_timeout": 15,
-        },
+# Database Configuration (Supabase PostgreSQL Default, Optional Local Mode via EMPATH_DB_MODE)
+DB_MODE = os.environ.get("EMPATH_DB_MODE", "postgres").strip().lower()
+
+if DB_MODE in ("", "postgres", "postgresql", "supabase"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("EMPATH_DB_NAME", "postgres"),
+            "USER": os.environ.get("EMPATH_DB_USER", "postgres"),
+            "PASSWORD": os.environ.get("EMPATH_DB_PASSWORD", ""),
+            "HOST": os.environ.get("EMPATH_DB_HOST", "127.0.0.1"),
+            "PORT": os.environ.get("EMPATH_DB_PORT", "5432"),
+            "OPTIONS": {
+                "sslmode": "require",
+                "connect_timeout": 15,
+            },
+        }
     }
-}
+elif DB_MODE in ("local", "sqlite"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    raise ImproperlyConfigured(
+        "EMPATH_DB_MODE must be 'postgres' (default) or 'local'."
+    )
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

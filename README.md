@@ -80,12 +80,14 @@
    ```env
    EMPATH_SECRET_KEY=your-dev-secret-key
    DJANGO_DEBUG=1
+   # EMPATH_DB_MODE=postgres  # Default: postgres (Supabase). Set to 'local' for offline SQLite testing.
    EMPATH_DB_HOST=aws-0-ap-southeast-1.pooler.supabase.com
    EMPATH_DB_PORT=5432
    EMPATH_DB_NAME=postgres
    EMPATH_DB_USER=postgres.your-project-ref
    EMPATH_DB_PASSWORD=your-database-password
    ```
+   > **Database Mode Toggle (`EMPATH_DB_MODE`):** By default (when `EMPATH_DB_MODE` is unset or `postgres`), EmpathTune connects directly to **Supabase PostgreSQL** (`sslmode="require"`). For offline workstation testing when Supabase is unreachable, you can temporarily set `EMPATH_DB_MODE=local` in your shell or `.env` without modifying any models, views, or migrations.
 
 5. **Apply database migrations (creates tables and seeds the 6 core moods in Supabase):**
    ```powershell
