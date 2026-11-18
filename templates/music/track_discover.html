@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Discover Music by Mood | EmpathTune{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="p-4 rounded-3 border" style="background-color: #1e293b; border-color: #334155;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <span class="badge bg-primary mb-2">Listener Discovery Sanctuary</span>
+                    <h2 class="h3 mb-1">Explore the Mood Catalog</h2>
+                    <p class="text-muted mb-0">
+                        Browse {{ total_catalog_count }} curated track{{ total_catalog_count|pluralize }} and record what each song means to you personally
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'dashboard:listener' %}" class="btn btn-outline-light btn-sm">← Listener Dashboard</a>
+                    <a href="{% url 'music:my_feelings_list' %}" class="btn btn-primary btn-sm">
+                        My Song Meanings ({{ saved_track_ids|length }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Mood Filter Bar -->
+    <div class="col-12">
+        <div class="card p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ search_query }}"
+                        class="form-control"
+                        placeholder="Search tracks by title, artist, album, or genre..."
+                    >
+                </div>
+                <div class="col-md-4">
+                    <select name="mood" class="form-select">
+                        <option value="">All Mood Contexts</option>
+                        {% for mood in mood_tags %}
+                            <option value="{{ mood.slug }}" {% if selected_mood == mood.slug %}selected{% endif %}>
+                                {{ mood.icon }} {{ mood.label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    {% if search_query or selected_mood %}
+                        <a href="{% url 'music:track_discover' %}" class="btn btn-outline-secondary">Reset</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- Quick Mood Pills -->
+            <div class="d-flex flex-wrap gap-2 mt-3 pt-2 border-top border-secondary">
+                <a href="{% url 'music:track_discover' %}{% if search_query %}?q={{ search_query }}{% endif %}"
+                   class="badge rounded-pill text-decoration-none px-3 py-2 {% if not selected_mood %}bg-primary text-light{% else %}bg-dark border border-secondary text-muted{% endif %}">
+                    All Moods
+                </a>
+                {% for mood in mood_tags %}
+                    <a href="{% url 'music:track_discover' %}?mood={{ mood.slug }}{% if search_query %}&amp;q={{ search_query }}{% endif %}"
+                       class="badge rounded-pill text-decoration-none px-3 py-2 {% if selected_mood == mood.slug %}bg-primary text-light{% else %}bg-dark border border-secondary text-light{% endif %}">
+                        {{ mood.icon }} {{ mood.label }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Track Cards Grid -->
+    {% if tracks %}
+        {% for track in tracks %}
+            <div class="col-md-6">
+                <div class="card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <div>
+                                <h5 class="mb-1 text-light">{{ track.title }}</h5>
+                                <div class="text-muted">{{ track.artist }}{% if track.album %} · <span class="small">{{ track.album }}</span>{% endif %}</div>
+                            </div>
+                            <div class="d-flex flex-column align-items-end gap-1">
+                                {% if track.genre %}
+                                    <span class="badge bg-dark border border-secondary text-muted">{{ track.genre }}</span>
+                                {% endif %}
+                                {% if track.user_feeling %}
+                                    <span class="badge bg-success">
+                                        {% if track.user_feeling.is_favorite %}★ {% endif %}Saved Meaning
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <span class="text-muted small d-block mb-1">Curator Moods:</span>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for mood in track.moods.all %}
+                                    <span class="badge rounded-pill px-2 py-1" style="background-color: #312e81; color: #e0e7ff; border: 1px solid #4f46e5;">
+                                        {{ mood.icon }} {{ mood.label }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-muted small fst-italic">No curator mood tags</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if track.user_feeling %}
+                            <div class="p-3 rounded mb-3 border border-secondary" style="background-color: #0f172a;">
+                                <div class="small text-info fw-semibold mb-1">Your Personal Association:</div>
+                                {% if track.user_feeling.moods.all %}
+                                    <div class="d-flex flex-wrap gap-1 mb-2">
+                                        {% for pmood in track.user_feeling.moods.all %}
+                                            <span class="badge bg-primary">{{ pmood.icon }} {{ pmood.label }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if track.user_feeling.note %}
+                                    <p class="small text-light fst-italic mb-0">"{{ track.user_feeling.note }}"</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary">
+                        <div>
+                            {% if track.preview_url %}
+                                <a href="{{ track.preview_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-info btn-sm">
+                                    ▶ Preview Track
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">No audio preview</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'music:song_feeling_upsert' track.pk %}"
+                           class="btn {% if track.user_feeling %}btn-outline-light{% else %}btn-primary{% endif %} btn-sm">
+                            {% if track.user_feeling %}Edit My Meaning{% else %}+ Log Personal Meaning{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card p-5 text-center">
+                <h5 class="mb-2">No tracks matched your search</h5>
+                <p class="text-muted mb-3">Try clearing your search query or selecting a different mood tag.</p>
+                <div>
+                    <a href="{% url 'music:track_discover' %}" class="btn btn-outline-light btn-sm">Show All Tracks</a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -6,43 +6,105 @@
 <div class="row g-4">
     <div class="col-12">
         <div class="p-4 rounded-3 border" style="background-color: #1e293b; border-color: #334155;">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                 <div>
                     <span class="badge bg-primary mb-2">Listener Space</span>
                     <h2 class="h3 mb-1">Welcome back, {{ user.username }}</h2>
-                    <p class="text-muted mb-0">Your private mood-tuned listening sanctuary</p>
+                    <p class="text-muted mb-0">Your private mood-tuned listening sanctuary and personal song journal</p>
                 </div>
-                <a href="{% url 'dashboard:profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'music:track_discover' %}" class="btn btn-primary btn-sm">Discover Tracks</a>
+                    <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-info btn-sm">My Song Meanings</a>
+                    <a href="{% url 'dashboard:profile' %}" class="btn btn-outline-light btn-sm">Edit Profile</a>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Live Listener Metrics -->
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Saved Song Meanings</div>
+            <div class="display-6 fw-bold text-primary mt-2">{{ listener_stats.saved_meanings_count }}</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Favorite Tracks</div>
+            <div class="display-6 fw-bold text-warning mt-2">{{ listener_stats.favorites_count }}</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 text-center">
+            <div class="text-muted small">Available Catalog Tracks</div>
+            <div class="display-6 fw-bold text-info mt-2">{{ listener_stats.available_tracks_count }}</div>
         </div>
     </div>
 
     <div class="col-md-5">
-        <div class="card p-3 h-100">
-            <h5 class="card-title mb-3">Saved Mood Contexts</h5>
+        <div class="card p-4 h-100">
+            <h5 class="card-title mb-3">Browse by Mood Context</h5>
             <div class="d-flex flex-wrap gap-2">
-                {% for mood in saved_moods %}
-                    <span class="badge bg-dark border border-secondary px-3 py-2">{{ mood }}</span>
+                {% for mood in mood_tags %}
+                    <a href="{% url 'music:track_discover' %}?mood={{ mood.slug }}"
+                       class="badge bg-dark border border-secondary text-light text-decoration-none px-3 py-2">
+                        {{ mood.icon }} {{ mood.label }}
+                    </a>
+                {% empty %}
+                    <span class="text-muted small">No mood tags seeded yet.</span>
                 {% endfor %}
             </div>
-            <p class="small text-muted mt-3 mb-0">Your mood preferences will seed your personalized recommendations.</p>
+            <p class="small text-muted mt-3 mb-0">
+                Select any mood context above to filter the EmpathTune catalog and record your personal song associations.
+            </p>
         </div>
     </div>
 
     <div class="col-md-7">
-        <div class="card p-3 h-100">
-            <h5 class="card-title mb-3">Recent Listening Activity</h5>
-            <ul class="list-group list-group-flush">
-                {% for item in recent_sessions %}
-                    <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center px-0">
-                        <div>
-                            <strong>{{ item.title }}</strong>
-                            <div class="small text-muted">Feeling: {{ item.feeling }}</div>
-                        </div>
-                        <span class="text-muted small">{{ item.time }}</span>
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Recent Personal Song Meanings</h5>
+                <a href="{% url 'music:my_feelings_list' %}" class="btn btn-outline-light btn-sm">View All →</a>
+            </div>
+            {% if recent_feelings %}
+                <ul class="list-group list-group-flush">
+                    {% for feeling in recent_feelings %}
+                        <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-start px-0 py-3">
+                            <div>
+                                <div class="fw-semibold">
+                                    {{ feeling.track.title }}
+                                    <span class="text-muted fw-normal">— {{ feeling.track.artist }}</span>
+                                    {% if feeling.is_favorite %}
+                                        <span class="badge bg-warning text-dark ms-1">★</span>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    {% for mood in feeling.moods.all %}
+                                        <span class="badge bg-primary">{{ mood.icon }} {{ mood.label }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% if feeling.note %}
+                                    <div class="small text-muted fst-italic mt-1">"{{ feeling.note|truncatechars:90 }}"</div>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex flex-column align-items-end gap-1 ms-2">
+                                <span class="text-muted small">{{ feeling.updated_at|date:"M d" }}</span>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'music:song_feeling_upsert' feeling.track.pk %}" class="btn btn-outline-light btn-sm">Edit</a>
+                                    <a href="{% url 'music:song_feeling_delete' feeling.pk %}" class="btn btn-outline-danger btn-sm">Delete</a>
+                                </div>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-muted">
+                    You haven't logged any personal song meanings yet.
+                    <a href="{% url 'music:track_discover' %}" class="text-info">Discover tracks</a> to record your first song reflection!
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

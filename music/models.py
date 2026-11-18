@@ -34,3 +34,37 @@ class Track(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.artist}"
+
+
+class SongFeeling(models.Model):
+    listener = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="song_feelings",
+    )
+    track = models.ForeignKey(
+        Track,
+        on_delete=models.CASCADE,
+        related_name="feelings",
+    )
+    moods = models.ManyToManyField(
+        MoodTag,
+        related_name="song_feelings",
+        blank=True,
+    )
+    note = models.TextField(max_length=240, blank=True, default="")
+    is_favorite = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["listener", "track"],
+                name="unique_listener_track_feeling",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.listener.username} on {self.track.title}"
